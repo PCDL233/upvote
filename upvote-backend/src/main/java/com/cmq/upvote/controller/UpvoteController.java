@@ -2,8 +2,8 @@ package com.cmq.upvote.controller;
 
 import com.cmq.upvote.common.BaseResponse;
 import com.cmq.upvote.common.ResultUtils;
-import com.cmq.upvote.model.dto.DoThumbRequest;
-import com.cmq.upvote.service.ThumbService;
+import com.cmq.upvote.model.dto.DoUpvoteRequest;
+import com.cmq.upvote.service.UpvoteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -15,22 +15,22 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "点赞模块", description = "点赞相关接口")
 @RestController
-@RequestMapping("thumb")
-public class ThumbController {
+@RequestMapping("upvote")
+public class UpvoteController {
     @Resource
-    private ThumbService thumbService;
+    private UpvoteService upvoteService;
 
     @Operation(summary = "点赞")
     @PostMapping("/do")
-    public BaseResponse<Boolean> doThumb(@RequestBody DoThumbRequest doThumbRequest, HttpServletRequest request) {
-        Boolean success = thumbService.doThumb(doThumbRequest, request);
+    public BaseResponse<Boolean> doUpvote(@RequestBody DoUpvoteRequest doUpvoteRequest, HttpServletRequest request) {
+        Boolean success = upvoteService.doUpvote(doUpvoteRequest, request);
         return ResultUtils.success(success);
     }
 
     @Operation(summary = "取消点赞")
     @PostMapping("/undo")
-    public BaseResponse<Boolean> undoThumb(@RequestBody DoThumbRequest doThumbRequest, HttpServletRequest request) {
-        Boolean success = thumbService.undoThumb(doThumbRequest, request);
+    public BaseResponse<Boolean> undoUpvote(@RequestBody DoUpvoteRequest doUpvoteRequest, HttpServletRequest request) {
+        Boolean success = upvoteService.undoUpvote(doUpvoteRequest, request);
         return ResultUtils.success(success);
     }
 }

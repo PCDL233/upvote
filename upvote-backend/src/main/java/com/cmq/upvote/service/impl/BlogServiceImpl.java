@@ -3,17 +3,19 @@ package com.cmq.upvote.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cmq.upvote.constant.UpvoteConstant;
 import com.cmq.upvote.mapper.BlogMapper;
 import com.cmq.upvote.model.entity.Blog;
-import com.cmq.upvote.model.entity.Thumb;
+import com.cmq.upvote.model.entity.Upvote;
 import com.cmq.upvote.model.entity.User;
 import com.cmq.upvote.model.vo.BlogVO;
 import com.cmq.upvote.service.BlogService;
-import com.cmq.upvote.service.ThumbService;
+import com.cmq.upvote.service.UpvoteService;
 import com.cmq.upvote.service.UserService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -36,7 +38,10 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog>
 
     @Resource
     @Lazy
-    private ThumbService thumbService;
+    private UpvoteService upvoteService;
+
+    @Resource
+    private RedisTemplate<String, Object> redisTemplate;
 
     /**
      * 获取博客详情
@@ -65,14 +70,17 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog>
         Map<Long, Boolean> blogIdHasThumbMap = new HashMap<>();
         if (ObjUtil.isNotEmpty(loginUser)) {
             // 获取当前用户点赞的博客id集合
-            Set<Long> blogIdSet = blogList.stream().map(Blog::getId).collect(Collectors.toSet());
+            List<Object> blogIdList = blogList.stream()
+                    .map(blog -> blog.getId().toString()).collect(Collectors.toList());
             // 获取点赞记录
-            List<Thumb> thumbList = thumbService.lambdaQuery()
-                    .eq(Thumb::getUserId, loginUser.getId())
-                    .in(Thumb::getBlogId, blogIdSet)
-                    .list();
-
-            thumbList.forEach(blogThumb -> blogIdHasThumbMap.put(blogThumb.getBlogId(), true));
+            List<Object> upvoteList = redisTemplate.opsForHash()
+                    .multiGet(UpvoteConstant.USER_UPVOTE_KEY_PREFIX + loginUser.getId(), blogIdList);
+            for (int i = 0; i < upvoteList.size(); i++) {
+                if (upvoteList.get(i) == null) {
+                    continue;
+                }
+                blogIdHasThumbMap.put(Long.valueOf(blogIdList.get(i).toString()), Boolean.TRUE);
+            }
         }
 
         return blogList.stream()
@@ -101,12 +109,8 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog>
         }
 
         // 获取点赞状态
-        Thumb thumb = thumbService.lambdaQuery()
-                .eq(Thumb::getUserId, loginUser.getId())
-                .eq(Thumb::getBlogId, blog.getId())
-                .one();
-        blogVO.setHasThumb(thumb != null);
-
+        Boolean exist = upvoteService.hasUpvote(blog.getId(), loginUser.getId());
+        blogVO.setHasThumb(exist);
         return blogVO;
     }
 }

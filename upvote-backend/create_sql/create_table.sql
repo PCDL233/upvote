@@ -21,11 +21,11 @@ CREATE INDEX idx_userId ON blog (userId);
 
 
 -- 点赞记录表
-CREATE TABLE IF NOT EXISTS thumb
+CREATE TABLE IF NOT EXISTS upvote
 (
     id         BIGINT AUTO_INCREMENT PRIMARY KEY,
     userId     BIGINT                             NOT NULL,
     blogId     BIGINT                             NOT NULL,
     createTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT '创建时间'
 );
-CREATE UNIQUE INDEX idx_userId_blogId ON thumb (userId, blogId);
+CREATE UNIQUE INDEX idx_userId_blogId ON upvote (userId, blogId);

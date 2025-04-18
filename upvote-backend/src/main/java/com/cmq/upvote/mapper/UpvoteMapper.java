@@ -1,7 +1,7 @@
 package com.cmq.upvote.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.cmq.upvote.model.entity.Thumb;
+import com.cmq.upvote.model.entity.Upvote;
 
 /**
 * @author CMQ233
@@ -9,7 +9,7 @@ import com.cmq.upvote.model.entity.Thumb;
 * @createDate 2025-04-17 22:23:20
 * @Entity generator.domain.Thumb
 */
-public interface ThumbMapper extends BaseMapper<Thumb> {
+public interface UpvoteMapper extends BaseMapper<Upvote> {
 
 }
 

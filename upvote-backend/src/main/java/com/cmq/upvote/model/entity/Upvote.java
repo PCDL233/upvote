@@ -11,11 +11,11 @@ import java.util.Date;
 
 /**
  * 
- * @TableName thumb
+ * @TableName upvote
  */
-@TableName(value ="thumb")
+@TableName(value ="upvote")
 @Data
-public class Thumb implements Serializable {
+public class Upvote implements Serializable {
     /**
      * 
      */

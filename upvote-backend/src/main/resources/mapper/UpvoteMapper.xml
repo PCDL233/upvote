@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cmq.upvote.mapper.ThumbMapper">
+<mapper namespace="com.cmq.upvote.mapper.UpvoteMapper">
 
-    <resultMap id="BaseResultMap" type="com.cmq.upvote.model.entity.Thumb">
+    <resultMap id="BaseResultMap" type="com.cmq.upvote.model.entity.Upvote">
             <id property="id" column="id" jdbcType="BIGINT"/>
             <result property="userId" column="userId" jdbcType="BIGINT"/>
             <result property="blogId" column="blogId" jdbcType="BIGINT"/>

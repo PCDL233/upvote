@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cmq.upvote.constant.UpvoteConstant;
 import com.cmq.upvote.mapper.BlogMapper;
 import com.cmq.upvote.model.entity.Blog;
-import com.cmq.upvote.model.entity.Upvote;
 import com.cmq.upvote.model.entity.User;
 import com.cmq.upvote.model.vo.BlogVO;
 import com.cmq.upvote.service.BlogService;
@@ -21,7 +20,6 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**

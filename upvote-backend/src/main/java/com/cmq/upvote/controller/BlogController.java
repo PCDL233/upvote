@@ -7,8 +7,8 @@ import com.cmq.upvote.model.vo.BlogVO;
 import com.cmq.upvote.service.BlogService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,9 +18,10 @@ import java.util.List;
 @Tag(name = "博客模块", description = "博客相关接口")
 @RestController
 @RequestMapping("blog")
+@RequiredArgsConstructor
 public class BlogController {
-    @Resource
-    private BlogService blogService;
+
+    private final BlogService blogService;
 
     @Operation(summary = "获取博客详情", description = "根据博客ID获取博客详情")
     @GetMapping("/get")

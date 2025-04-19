@@ -7,8 +7,8 @@ import com.cmq.upvote.model.entity.User;
 import com.cmq.upvote.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "用户模块", description = "用户模块相关接口")
 @RestController
 @RequestMapping("user")
+@RequiredArgsConstructor
 public class UserController {
-    @Resource
-    private UserService userService;
+    private final UserService userService;
 
     @Operation(summary = "登录")
     @GetMapping("/login")

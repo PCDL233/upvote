@@ -25,7 +25,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  * @description 针对表【thumb】的数据库操作Service实现
  * @createDate 2025-04-17 22:23:20
  */
-@Service
+@Service("upvoteServiceDB")
 @Slf4j
 @RequiredArgsConstructor
 public class UpvoteServiceImpl extends ServiceImpl<UpvoteMapper, Upvote> implements UpvoteService {

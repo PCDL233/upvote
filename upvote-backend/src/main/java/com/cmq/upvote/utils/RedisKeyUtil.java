@@ -4,7 +4,7 @@ package com.cmq.upvote.utils;
 import com.cmq.upvote.constant.UpvoteConstant;
 
 /**
- * @author pine
+ * Redis Key 工具类
  */
 public class RedisKeyUtil {
 

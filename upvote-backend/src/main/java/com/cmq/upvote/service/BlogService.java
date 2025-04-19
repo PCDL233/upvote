@@ -8,10 +8,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
-* @author CMQ233
-* @description 针对表【blog】的数据库操作Service
-* @createDate 2025-04-17 22:21:31
-*/
+ * @author CMQ233
+ * @description 针对表【blog】的数据库操作Service
+ * @createDate 2025-04-17 22:21:31
+ */
 public interface BlogService extends IService<Blog> {
 
     BlogVO getBlogVOById(long blogId, HttpServletRequest request);

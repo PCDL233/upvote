@@ -9,6 +9,8 @@ public interface UpvoteConstant {
 
     /**
      * 用户点赞记录 key
+     * <p>
+     * 值为0则代表未点赞
      */
     Long UN_UPVOTE_CONSTANT = 0L;
 

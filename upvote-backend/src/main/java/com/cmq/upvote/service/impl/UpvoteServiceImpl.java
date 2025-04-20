@@ -149,7 +149,10 @@ public class UpvoteServiceImpl extends ServiceImpl<UpvoteMapper, Upvote> impleme
      */
     @Override
     public Boolean hasUpvote(Long blogId, Long userId) {
-        Object upvoteObj = cacheManager.get(UpvoteConstant.USER_UPVOTE_KEY_PREFIX + userId, blogId.toString());
+        String hashKey = UpvoteConstant.USER_UPVOTE_KEY_PREFIX + userId;
+        String fieldKey = blogId.toString();
+
+        Object upvoteObj = cacheManager.get(hashKey, fieldKey);
         if (upvoteObj == null) {
             return false;
         }

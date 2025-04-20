@@ -94,7 +94,6 @@ public class CacheManager {
         //2.从 Redis 中获取
         Object redisValue = redisTemplate.opsForHash().get(hashKey, key);
         if (redisValue == null) {
-            log.info("Redis 中不存在数据: {}", compositeKey);
             return null;
         }
         if (redisValue instanceof Number) {

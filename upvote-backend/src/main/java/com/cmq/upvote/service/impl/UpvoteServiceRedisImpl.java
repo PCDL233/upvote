@@ -30,7 +30,7 @@ import java.util.Arrays;
  * <p>
  * 点赞和取消点赞的操作是原子性的，避免了并发问题
  */
-@Service("upvoteService")
+@Service("upvoteServiceRedis")
 @Slf4j
 @RequiredArgsConstructor
 public class UpvoteServiceRedisImpl extends ServiceImpl<UpvoteMapper, Upvote> implements UpvoteService {

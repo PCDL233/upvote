@@ -39,10 +39,10 @@ public class SyncUpvote2DBJob {
      * 每10秒将 Redis 中的临时点赞数据同步到数据库
      * 10秒的时间是为了避免 Redis 中的数据过多，导致内存占用过高
      */
-    @Scheduled(initialDelay = 10000, fixedDelay = 10000)
+    @Scheduled(initialDelay = 20000, fixedDelay = 20000)
     @Transactional(rollbackFor = Exception.class)
     public void run() {
-        log.info("开始执行");
+        log.info("数据同步开始执行");
         DateTime nowDate = DateUtil.date();
         String date = DateUtil.format(nowDate, "HH:mm:") + (DateUtil.second(nowDate) / 10 - 1) * 10;
         //将redis中的数据同步到数据库

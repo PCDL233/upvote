@@ -10,7 +10,7 @@ public interface UpvoteConstant {
     /**
      * 用户点赞记录 key
      */
-    Long USER_UPVOTE_CONSTANT = 0L;
+    Long UN_UPVOTE_CONSTANT = 0L;
 
     /**
      * 临时 点赞记录 key

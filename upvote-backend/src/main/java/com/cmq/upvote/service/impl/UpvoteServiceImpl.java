@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cmq.upvote.constant.UpvoteConstant;
 import com.cmq.upvote.exception.BusinessException;
 import com.cmq.upvote.exception.ErrorCode;
+import com.cmq.upvote.manager.cache.CacheManager;
 import com.cmq.upvote.mapper.UpvoteMapper;
 import com.cmq.upvote.model.dto.DoUpvoteRequest;
 import com.cmq.upvote.model.entity.Blog;
@@ -12,7 +13,6 @@ import com.cmq.upvote.model.entity.User;
 import com.cmq.upvote.service.BlogService;
 import com.cmq.upvote.service.UpvoteService;
 import com.cmq.upvote.service.UserService;
-import com.cmq.upvote.utils.RedisKeyUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +25,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  * @description 针对表【thumb】的数据库操作Service实现
  * @createDate 2025-04-17 22:23:20
  */
-@Service("upvoteServiceDB")
+@Service("upvoteService")
 @Slf4j
 @RequiredArgsConstructor
 public class UpvoteServiceImpl extends ServiceImpl<UpvoteMapper, Upvote> implements UpvoteService {
@@ -37,6 +37,9 @@ public class UpvoteServiceImpl extends ServiceImpl<UpvoteMapper, Upvote> impleme
     private final TransactionTemplate transactionTemplate;
 
     private final RedisTemplate<String, Object> redisTemplate;
+
+    //缓存管理
+    private final CacheManager cacheManager;
 
     /**
      * 点赞
@@ -73,9 +76,13 @@ public class UpvoteServiceImpl extends ServiceImpl<UpvoteMapper, Upvote> impleme
                 // 更新成功才执行
                 boolean success = update && this.save(upvote);
                 if (success) {
-                    // 将点赞记录存入redis
-                    redisTemplate.opsForHash().put(UpvoteConstant.USER_UPVOTE_KEY_PREFIX + loginUser.getId().toString(),
-                            blogId.toString(), upvote.getId());
+                    String hashKey = UpvoteConstant.USER_UPVOTE_KEY_PREFIX + loginUser.getId();
+                    String fieldKey = blogId.toString();
+                    Long upvoteId = upvote.getId();
+                    // 将点赞记录存入 Redis
+                    redisTemplate.opsForHash().put(hashKey, fieldKey, upvoteId);
+                    //如果本地缓存中已有该数据，则更新本地缓存
+                    cacheManager.putIfPresent(hashKey, fieldKey, upvoteId);
                     return true;
                 } else {
                     throw new BusinessException(ErrorCode.OPERATION_ERROR, "点赞失败");
@@ -101,16 +108,9 @@ public class UpvoteServiceImpl extends ServiceImpl<UpvoteMapper, Upvote> impleme
         synchronized (loginUser.getId().toString().intern()) {
             return transactionTemplate.execute(status -> {
                 Long blogId = doUpvoteRequest.getBlogId();
-                //从redis中查询是否点赞
-                Long upvoteId = null;
-                Object value = redisTemplate.opsForHash()
-                        .get(UpvoteConstant.USER_UPVOTE_KEY_PREFIX + loginUser.getId().toString(), blogId.toString());
-                if (value instanceof Integer) {
-                    upvoteId = Long.valueOf((Integer) value);
-                } else if (value instanceof Long) {
-                    upvoteId = (Long) value;
-                }
-                if (upvoteId == null) {
+                //从多级缓存中查询是否点赞
+                Object upvoteObj = cacheManager.get(UpvoteConstant.USER_UPVOTE_KEY_PREFIX + loginUser.getId(), blogId.toString());
+                if (upvoteObj == null || upvoteObj.equals(UpvoteConstant.UN_UPVOTE_CONSTANT)) {
                     throw new BusinessException(ErrorCode.OPERATION_ERROR, "用户未点赞");
                 }
 
@@ -120,11 +120,14 @@ public class UpvoteServiceImpl extends ServiceImpl<UpvoteMapper, Upvote> impleme
                         .update();
 
                 // 更新成功才执行
-                boolean success = update && this.removeById(upvoteId);
+                boolean success = update && this.removeById((Long) upvoteObj);
                 if (success) {
-                    // 将点赞记录从redis中删除
-                    redisTemplate.opsForHash().delete(UpvoteConstant.USER_UPVOTE_KEY_PREFIX + loginUser.getId().toString(),
-                            blogId.toString());
+                    // 将点赞记录从缓存中删除
+                    String hashKey = UpvoteConstant.USER_UPVOTE_KEY_PREFIX + loginUser.getId();
+                    String fieldKey = blogId.toString();
+                    redisTemplate.opsForHash().delete(hashKey, fieldKey);
+                    //如果本地缓存中已有该数据，则更新本地缓存
+                    cacheManager.putIfPresent(hashKey, fieldKey, UpvoteConstant.UN_UPVOTE_CONSTANT);
                     return true;
                 } else {
                     throw new BusinessException(ErrorCode.OPERATION_ERROR, "取消点赞失败");
@@ -134,7 +137,11 @@ public class UpvoteServiceImpl extends ServiceImpl<UpvoteMapper, Upvote> impleme
     }
 
     /**
-     * 在redis中查询是否点赞
+     * 使用多级缓存机制
+     * <p>
+     * 先从本地缓存中查询是否点赞
+     * 如果没有，则从 Redis 中查询
+     * 如果 Redis 中也没有，则返回 false
      *
      * @param blogId 博客id
      * @param userId 用户id
@@ -142,7 +149,13 @@ public class UpvoteServiceImpl extends ServiceImpl<UpvoteMapper, Upvote> impleme
      */
     @Override
     public Boolean hasUpvote(Long blogId, Long userId) {
-        return redisTemplate.opsForHash().hasKey(RedisKeyUtil.getUserUpvoteKey(userId), blogId.toString());
+        Object upvoteObj = cacheManager.get(UpvoteConstant.USER_UPVOTE_KEY_PREFIX + userId, blogId.toString());
+        if (upvoteObj == null) {
+            return false;
+        }
+        //如果点赞记录为0，则说明没有点赞
+        Long upvoteId = (Long) upvoteObj;
+        return !UpvoteConstant.UN_UPVOTE_CONSTANT.equals(upvoteId);
     }
 }
 
